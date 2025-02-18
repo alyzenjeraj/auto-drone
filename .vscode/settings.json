@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.sdf": "xml"
+    },
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on"
+}
