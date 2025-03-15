@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  gz-sim:
+    build: 
+      context: .
+      dockerfile: gz-sim.Dockerfile
+    container_name: gazebo_sim
+    privileged: true
+    network_mode: "host"
+    environment:
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - GZ_SIM_RESOURCE_PATH=/root/.gazebo
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ../simulation:/app/simulation
+    working_dir: /app/simulation
+    command: >
+      bash -c "sleep infinity"
+
+  drone_controller:
+    build: 
+      context: .
+      dockerfile: controller.Dockerfile
+    container_name: drone_controller
+    network_mode: "host"
+    volumes:
+    - ../controller/:/app/controller/
+    depends_on:
+      - gz-sim
+    working_dir: /app/controller
+    command: >
+      bash -c "sleep infinity"
