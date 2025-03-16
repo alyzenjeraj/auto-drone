@@ -5,13 +5,21 @@
 #include <thread>
 #include <chrono>
 
-const double TARGET_HEIGHT = 5.0; // Target height (m)
-
-// Global variables
+// Global variable to store the latest pose for X3_UAV
 gz::msgs::Pose latestPose;
 bool poseReceived = false;
 
-// Callback function for receiving pose updates
+// PID controller parameters for altitude (z-axis)
+double setpoint = 2.0;
+double Kp = 50.0;     
+double Ki = 0.0;      
+double Kd = 20.0;     
+
+double prevError = 0.0;
+double integral = 0.0;
+std::chrono::steady_clock::time_point prevTime;
+
+// Callback function to receive pose updates
 void poseCallback(const gz::msgs::Pose_V &msg) {
     for (int i = 0; i < msg.pose_size(); i++) {
         auto pose = msg.pose(i);
@@ -22,75 +30,74 @@ void poseCallback(const gz::msgs::Pose_V &msg) {
     }
 }
 
-// Function to print the current drone pose
-void printPose() {
-    if (poseReceived) {
-        std::cout << "Drone Pose (X3_UAV): x=" << latestPose.position().x()
-                  << ", y=" << latestPose.position().y()
-                  << ", z=" << latestPose.position().z()
-                  << " | Orientation (w, x, y, z): "
-                  << latestPose.orientation().w() << ", "
-                  << latestPose.orientation().x() << ", "
-                  << latestPose.orientation().y() << ", "
-                  << latestPose.orientation().z() << std::endl;
-    } else {
-        std::cout << "Waiting for first pose update..." << std::endl;
-    }
+// Function to compute elapsed time in seconds
+double computeDt(std::chrono::steady_clock::time_point &prevTime) {
+    auto now = std::chrono::steady_clock::now();
+    double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - prevTime).count() / 1000.0;
+    prevTime = now;
+    return dt;
 }
 
 int main() {
     gz::transport::Node node;
 
-    // Subscribe to pose topic
-    std::string pose_topic = "/world/quadcopter/dynamic_pose/info";
-    node.Subscribe(pose_topic, &poseCallback);
+    std::string poseTopic = "/world/quadcopter/dynamic_pose/info";
+    node.Subscribe(poseTopic, &poseCallback);
 
-    // Advertise motor speed topic
-    std::string motor_speed_topic = "/X3/gazebo/command/motor_speed";
-    auto pub = node.Advertise<gz::msgs::Actuators>(motor_speed_topic);
+    std::string motorSpeedTopic = "/X3/gazebo/command/motor_speed";
+    auto pub = node.Advertise<gz::msgs::Actuators>(motorSpeedTopic);
 
-    std::cout << "Starting Drone Controller..." << std::endl;
+    std::cout << "Starting Hover PID Controller..." << std::endl;
 
-    // Wait for pose updates to start
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // Takeoff sequence (increase throttle gradually)
-    for (int speed = 500; speed <= 700; speed += 50) {
-        gz::msgs::Actuators msg;
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-
-        pub.Publish(msg);
-        printPose();
-
-        std::cout << "Sending motor speeds: " << speed << ", " << speed << ", " << speed << ", " << speed << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    while (!poseReceived) {
+        std::cout << "Waiting for first pose update..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    // Hover for 5 seconds
-    std::cout << "Hovering..." << std::endl;
-    for (int i = 0; i < 5; i++) {
-        printPose();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    prevTime = std::chrono::steady_clock::now();
+
+    int baseSpeed = 700;
+
+    while (true) {
+        // Ensure we have a valid pose update
+        if (!poseReceived) {
+            std::cerr << "No pose data available." << std::endl;
+            continue;
+        }
+
+        // Get current altitude from the pose (z-axis)
+        double currentAltitude = latestPose.position().z();
+        // Compute error between setpoint and current altitude
+        double error = setpoint - currentAltitude;
+        // Compute time difference
+        double dt = computeDt(prevTime);
+
+        integral += error * dt;
+        double derivative = (error - prevError) / dt;
+        prevError = error;
+
+        double correction = (Kp * error) + (Ki * integral) + (Kd * derivative);
+
+        int newSpeed = static_cast<int>(baseSpeed + correction);
+
+        if (newSpeed < 400) newSpeed = 400;
+        if (newSpeed > 800) newSpeed = 800;
+
+        gz::msgs::Actuators motorMsg;
+        motorMsg.add_velocity(newSpeed);
+        motorMsg.add_velocity(newSpeed);
+        motorMsg.add_velocity(newSpeed);
+        motorMsg.add_velocity(newSpeed);
+        pub.Publish(motorMsg);
+
+        std::cout << "dt: " << dt << " s, "
+                  << "Error: " << error << ", "
+                  << "Correction: " << correction << ", "
+                  << "New Motor Speed: " << newSpeed << ", "
+                  << "Current Altitude: " << currentAltitude << " m" << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    // Landing sequence (reduce throttle gradually)
-    for (int speed = 700; speed >= 400; speed -= 50) {
-        gz::msgs::Actuators msg;
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-        msg.add_velocity(speed);
-
-        pub.Publish(msg);
-        printPose();
-
-        std::cout << "Sending motor speeds: " << speed << ", " << speed << ", " << speed << ", " << speed << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    std::cout << "Drone Landed Successfully!" << std::endl;
     return 0;
 }
