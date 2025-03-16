@@ -1,0 +1,9 @@
+cc_binary(
+    name = "controller",
+    srcs = ["main.cpp"],
+    deps = [
+        "//third_party/gazebo:gz_transport",
+        "//third_party/gazebo:gz_msgs2",
+    ],
+    copts = ["-std=c++17"],
+)

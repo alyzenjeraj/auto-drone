@@ -1,0 +1,13 @@
+cc_library(
+    name = "gz_transport",
+    hdrs = glob(["/usr/include/gz/transport**/*.h", "/usr/include/gz/transport**/*.hpp"]),
+    includes = ["/usr/include"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gz_msgs",
+    hdrs = glob(["/usr/include/gz/msgs**/*.h", "/usr/include/gz/msgs**/*.hpp"]),
+    includes = ["/usr/include"],
+    visibility = ["//visibility:public"],
+)
