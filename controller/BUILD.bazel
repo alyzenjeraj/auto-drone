@@ -3,7 +3,13 @@ cc_binary(
     srcs = ["main.cpp"],
     deps = [
         "//third_party/gazebo:gz_transport",
-        "//third_party/gazebo:gz_msgs2",
+        "//third_party/gazebo:gz_msgs",
+        "//third_party/gazebo:gz_utils",
     ],
-    copts = ["-std=c++17"],
+    copts = [
+        "-std=c++17",
+        "-I/usr/include/gz/transport14",
+        "-I/usr/include/gz/msgs11",
+        "-I/usr/include/gz/utils3",
+        ],
 )

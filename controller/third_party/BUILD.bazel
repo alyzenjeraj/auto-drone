@@ -5,10 +5,12 @@ cc_library(
     deps = [
         "//third_party/gazebo:gz_transport",
         "//third_party/gazebo:gz_msgs",
+        "//third_party/gazebo:gz_utils",
     ],
     linkopts = [
         "-lgz-transport14",  # Adjust version number as needed
         "-lgz-msgs11",        # Adjust version number as needed
+        "-lgz-utils3",        # Adjust version number as needed
         # "-lgz-common5",      # Adjust version number as needed
     ],
     visibility = ["//visibility:public"],
