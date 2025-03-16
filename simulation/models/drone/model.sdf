@@ -5,6 +5,9 @@
 
         <pose>0 0 1 0 0 0</pose>
         <!-- Dummy link to satisfy SDF requirements -->
+
+        <!-- Include the X3 UAV model from Gazebo Fuel -->
+        <include>
         <link name="base_link">
             <pose>0 0 0.1 0 0 0</pose>
             <inertial>
@@ -15,13 +18,25 @@
                     <izz>0.06</izz>
                 </inertia>
             </inertial>
+            <collision name="base_collision">
+                <geometry>
+                    <box>
+                        <size>0.5 0.5 0.2</size>
+                    </box>
+                </geometry>
+                <surface>
+                    <contact>
+                        <ode>
+                            <soft_cfm>0.01</soft_cfm>
+                            <soft_erp>0.2</soft_erp>
+                        </ode>
+                    </contact>
+                </surface>
+            </collision>
         </link>
 
-        <!-- Include the X3 UAV model from Gazebo Fuel -->
-        <include>
-
-            <uri>
-                https://fuel.gazebosim.org/1.0/OpenRobotics/models/X3 UAV/4
+            <uri> https://fuel.gazebosim.org/1.0/OpenRobotics/models/X3 UAV/4 <pose
+                    relative_to="base_link">0 0 0 0 0 0</pose>
             </uri>
             <plugin
                 filename="gz-sim-multicopter-motor-model-system"
@@ -103,8 +118,13 @@
                 <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
                 <motorType>velocity</motorType>
             </plugin>
-
+            <!-- <name>X3</name> -->
+        <joint name="base_link_to_x3_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>x3::X3::base_link</child>
+        </joint>
         </include>
+
 
     </model>
 </sdf>

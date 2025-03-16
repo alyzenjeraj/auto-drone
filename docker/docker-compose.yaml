@@ -17,7 +17,7 @@ services:
       - ../simulation:/app/simulation
     working_dir: /app/simulation
     command: >
-      bash -c "sleep infinity"
+      bash -c " export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:/app/simulation/models/ && sleep infinity"
 
   drone_controller:
     build: 
