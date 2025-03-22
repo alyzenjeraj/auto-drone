@@ -12,14 +12,13 @@ bool poseReceived = false;
 // PID controller parameters for altitude (z-axis)
 double setpoint = 2.0;
 double Kp = 50.0;     
-double Ki = 0.0;      
+double Ki = 5.0;      
 double Kd = 20.0;     
 
 double prevError = 0.0;
 double integral = 0.0;
 std::chrono::steady_clock::time_point prevTime;
 
-// Callback function to receive pose updates
 void poseCallback(const gz::msgs::Pose_V &msg) {
     for (int i = 0; i < msg.pose_size(); i++) {
         auto pose = msg.pose(i);
@@ -30,7 +29,6 @@ void poseCallback(const gz::msgs::Pose_V &msg) {
     }
 }
 
-// Function to compute elapsed time in seconds
 double computeDt(std::chrono::steady_clock::time_point &prevTime) {
     auto now = std::chrono::steady_clock::now();
     double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - prevTime).count() / 1000.0;

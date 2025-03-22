@@ -1,0 +1,8 @@
+cc_library(
+    name = "pid_controller",
+    hdrs = ["pid_controller.hpp"],
+    includes = [],
+    deps = [],
+    linkopts = [],
+    visibility = ["//visibility:public"],
+)

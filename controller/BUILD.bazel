@@ -5,6 +5,7 @@ cc_binary(
         "//third_party/gazebo:gz_transport",
         "//third_party/gazebo:gz_msgs",
         "//third_party/gazebo:gz_utils",
+        "//pid_controller:pid_controller"
     ],
     copts = [
         "-std=c++17",
@@ -12,4 +13,7 @@ cc_binary(
         "-I/usr/include/gz/msgs11",
         "-I/usr/include/gz/utils3",
         ],
+    linkopts = [
+        "-lzmq",
+    ],
 )
