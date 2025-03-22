@@ -19,6 +19,7 @@ RUN apt update && apt upgrade -y && \
         protobuf-compiler \
         libprotobuf-dev \
         libgrpc-dev \
+        libzmq3-dev \
         software-properties-common \
         lsb-release \
         wget \
