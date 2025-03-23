@@ -1,4 +1,4 @@
-#include "pid_controller.hpp"
+#include "pid.hpp"
 
 PIDController::PIDController(double kp, double ki, double kd)
     : kp_(kp), ki_(ki), kd_(kd), integral_(0.0), prev_error_(0.0) {}

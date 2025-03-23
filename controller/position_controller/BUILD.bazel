@@ -1,6 +1,6 @@
 cc_library(
-    name = "pid_controller",
-    hdrs = ["pid_controller.hpp"],
+    name = "pid",
+    hdrs = ["pid.hpp"],
     includes = [],
     deps = [],
     linkopts = [],

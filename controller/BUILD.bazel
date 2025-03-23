@@ -5,7 +5,7 @@ cc_binary(
         "//third_party/gazebo:gz_transport",
         "//third_party/gazebo:gz_msgs",
         "//third_party/gazebo:gz_utils",
-        "//pid_controller:pid_controller"
+        "//pid:pid"
     ],
     copts = [
         "-std=c++17",
