@@ -5,10 +5,11 @@ cc_binary(
         "//third_party/gazebo:gz_transport",
         "//third_party/gazebo:gz_msgs",
         "//third_party/gazebo:gz_utils",
-        "//pid:pid"
+        "//device_interface/sensor_manager/pose_manager:pose_manager"
+        "//attitude_controller:attitude_controller"
+        "//position_controller:position_controller"
     ],
     copts = [
-        "-std=c++17",
         "-I/usr/include/gz/transport14",
         "-I/usr/include/gz/msgs11",
         "-I/usr/include/gz/utils3",
